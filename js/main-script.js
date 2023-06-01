@@ -10,9 +10,11 @@ var ambientLight;
 // 3D objects
 var moon;
 var ufo;
-const axis = new THREE.AxisHelper(20);
+const axis = new THREE.AxesHelper(20);
 const updatables = [];
 const sceneObjects = [];
+//colors 
+const orangeLight = 0xcdaf55;
 // other 
 const clock = new THREE.Clock();
 var scene, renderer;
@@ -29,7 +31,7 @@ function addMaterials(mesh, color, emissive) {
         'basic': new THREE.MeshBasicMaterial({ color: color})
     };
     
-    mesh.material = mesh.userData.materials['lambert'];
+    mesh.material = mesh.userData.materials['phong'];
     sceneObjects.push(mesh);
 }
 
@@ -55,6 +57,12 @@ function createScene(){
     ambientLight = createAmbientLight();
     axis.visible = true;
     scene.add(axis);  
+
+    let plane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100));
+    addMaterials(plane, 0x00ff00, 0x000000);
+    plane.position.set(0, 0, 0);
+    plane.rotation.x = -Math.PI / 2
+    scene.add(plane);
 }
 
 //////////////////////
@@ -82,7 +90,7 @@ function createCameras() {
 /////////////////////
 function createDirectionalLight(x, y, z) {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(1, 1, 1);
+    directionalLight.position.set(x,y, z);
     scene.add(directionalLight);
     return directionalLight;
 }
@@ -106,40 +114,46 @@ function createMoon(radius) {
 
 function createCylinderSpotlight(obj, radius) {
     const cylinderGeometry = new THREE.CylinderGeometry(radius/3, radius/3, radius/6, segments);
-    const cylinderMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-    const cylinderMesh = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
-    cylinderMesh.position.y = -radius/3; // Adjust the position as needed
+    const cylinderMesh = new THREE.Mesh(cylinderGeometry);
+    addMaterials(cylinderMesh, 0xaaaa55, 0xff0000);
+    cylinderMesh.position.y = -radius/3; 
     obj.add(cylinderMesh);
 
-    const spotlight = new THREE.SpotLight(0xffffff);
-    const position = cylinderMesh.position.clone();
-    position.y = 0;
-    spotlight.target.position.copy(position);
+    const spotLightTarget = new THREE.Object3D();
+    spotLightTarget.position.set(0, -10, 0);
+
+    const spotlight = new THREE.SpotLight(orangeLight, 1, 0, Math.PI / 4, 0.5);;
+
+    spotlight.target = spotLightTarget;
+    spotlight.add(spotLightTarget);
+    obj.userData.lights.spotlight = spotlight;
+    
     cylinderMesh.add(spotlight);
-    scene.add(spotlight.target)
 }
+
 
 function createSmallSpheres(obj, radius, smallSphereRadius, numSmallSpheres, segments) {
     const smallSphereGeometry = new THREE.SphereGeometry(smallSphereRadius, segments, segments);
-    const smallSphereMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 
     for (let i = 0; i < numSmallSpheres; i++) {
-        const smallSphereMesh = new THREE.Mesh(smallSphereGeometry, smallSphereMaterial);
+        const smallSphereMesh = new THREE.Mesh(smallSphereGeometry);
+        addMaterials(smallSphereMesh, 0xaaaa55, 0xff0000);
         const angle = (i / numSmallSpheres) * Math.PI * 2;
         const radiusOffset = radius * 0.7; // Offset from the center of the body
         smallSphereMesh.position.set(Math.cos(angle) * radiusOffset, -radius/3, Math.sin(angle) * radiusOffset);
         obj.add(smallSphereMesh);
 
-        const pointLight = new THREE.PointLight(0xffffff, 1, 10);
+        const pointLight = new THREE.PointLight(orangeLight, 1, 4);
         pointLight.position.copy(smallSphereMesh.position);
         smallSphereMesh.add(pointLight);
+        obj.userData.lights.pointLights.push(pointLight);
     }
 }
 
 function createCockpit(obj, radius, segments) {
     const cockpitGeometry = new THREE.SphereGeometry(radius, segments, segments, 0, Math.PI*2, 0, Math.PI/2);
-    const cockpitMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-    const cockpitMesh = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
+    const cockpitMesh = new THREE.Mesh(cockpitGeometry);
+    addMaterials(cockpitMesh, 0xffffff, 0x000000);
     cockpitMesh.position.y = radius;
     obj.add(cockpitMesh);
 }
@@ -147,8 +161,8 @@ function createCockpit(obj, radius, segments) {
 function createMainBody(radius, segments) {
     const bodyGeometry = new THREE.SphereGeometry(radius, segments, segments);
     bodyGeometry.scale(1, 1/3, 1);
-    const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-    const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    const bodyMesh = new THREE.Mesh(bodyGeometry);
+    addMaterials(bodyMesh, 0x3355aa, 0x000000);
     return bodyMesh;
 }
 
@@ -156,12 +170,13 @@ function createUFO(radius, smallSphereRadius, numSmallSpheres) {
     segments = 64;
     const ufo = createMainBody(radius, segments);
     createCockpit(ufo, radius/3, segments);
-
+    ufo.userData.lights = {
+        spotlight: undefined,
+        pointLights : []
+    }
     createSmallSpheres(ufo, radius, smallSphereRadius, numSmallSpheres, segments);
     createCylinderSpotlight(ufo, radius);
 
-    /*ufo.rotation.z = Math.PI/2;
-    ufo.rotation.y = -Math.PI/2;*/
     scene.add(ufo);
     return ufo;
 }
@@ -272,7 +287,7 @@ function onKeyUp(e){
             break;
         case 'd':
         case 'D':
-            directionalLight.visible = !directionalLight.visible;    
+            directionalLight.visible = !directionalLight.visible;
         case 'q':
         case 'Q':
             changeMaterials('lambert');
@@ -289,6 +304,17 @@ function onKeyUp(e){
         case 'R':
             changeMaterials('basic');
             break; 
+        case 'p':
+        case 'P':
+            let visibility = ufo.userData.lights.spotlight.visible;
+            ufo.userData.lights.spotlight.visible = !visibility;
+            break;  
+        case 's':
+        case 'S':
+            for(const pointLight of ufo.userData.lights.pointLights) {
+                pointLight.visible = !pointLight.visible;
+            }
+            break;           
     }        
 
 }
