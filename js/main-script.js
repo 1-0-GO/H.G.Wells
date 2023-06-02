@@ -58,7 +58,7 @@ function createScene(){
     moon = createMoon(4);
     moon.position.set(-30, 20, -5);
     ufo = createUFO(3, 0.15, 12);
-    createHouse();
+    createHouse(6, 2, 2);
     ufo.position.set(10, 16, -5);
     directionalLight = createDirectionalLight(1, 1, 1);
     ambientLight = createAmbientLight();
@@ -209,26 +209,62 @@ function createUFO(radius, smallSphereRadius, numSmallSpheres) {
     return ufo;
 }
 
-function createHouse() {
+function createHouse(l ,h, w) {
     const vertices = new Float32Array([
-        2, -1, 2, 
-        2, -1, -2,
-        2, 1, -2, 
-        2, 1, 2, 
-        1.5, 1.5, 0,
-        -1.5, 1.5, 0,
-        -2, -1, 2, 
-        -2, 1, 2, 
-        -2, 1, -2,  
-        -2, -1, -2 
-    ]);
+        // Front face
+        -l, -h, w,  // Vertex 0
+        l, -h, w,   // Vertex 1
+        l, h, w,    // Vertex 2
+        -l, h, w,   // Vertex 3
+      
+        // Back face
+        -l, -h, -w, // Vertex 4
+        l, -h, -w,  // Vertex 5
+        l, h, -w,   // Vertex 6
+        -l, h, -w,   // Vertex 7
 
-    const indices = [
-        0, 3, 1,
-        3, 2, 1,
-        2, 8, 3,
-        3, 8, 7,
-    ];
+        // Pyramid top
+        -0.8 * l, 1.5 * h, 0, // Vertex 8
+        0.8 * l, 1.5 * h, 0  // Vertex 9
+      ]);
+      
+      // Create an array to define the parallelepiped's faces using indices
+      const indices = [
+        // Parallellepiped
+        // Front face
+        0, 1, 2,
+        2, 3, 0,
+      
+        // Back face
+        4, 6, 5,
+        4, 7, 6,
+      
+        // Top face
+        3, 2, 6,
+        3, 6, 7,
+      
+        // Bottom face
+        0, 4, 1,
+        1, 4, 5,
+      
+        // Left face
+        0, 3, 7,
+        0, 7, 4,
+      
+        // Right face
+        1, 5, 6,
+        1, 6, 2,
+
+        //Roof
+        //Front Face
+        3, 2, 9,
+        9, 8, 2,
+
+        //Back Face
+        7, 9, 6,
+        6, 9, 8,
+
+        ];
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
@@ -236,8 +272,8 @@ function createHouse() {
     const mesh = new THREE.Mesh(geometry);
     addMaterials(mesh, 0xffffff, 0x000000);
     mesh.position.set(5, 5, 5);
-    mesh.rotation.y = 1.2;
     scene.add(mesh);
+    mesh.rotation.y = 1.3;
 }
 
 //////////////////////
