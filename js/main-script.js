@@ -224,8 +224,8 @@ function createHouse(l ,h, w) {
         -l, h, -w,   // Vertex 7
 
         // Pyramid top
-        -0.8 * l, 1.5 * h, 0, // Vertex 8
-        0.8 * l, 1.5 * h, 0  // Vertex 9
+        -0.8 * l, 3.5 * h, 0, // Vertex 8
+        0.8 * l, 3.5 * h, 0  // Vertex 9
       ]);
       
       // Create an array to define the parallelepiped's faces using indices
@@ -264,7 +264,12 @@ function createHouse(l ,h, w) {
         7, 9, 6,
         6, 9, 8,
 
-        ];
+        //Left Face
+        3, 8, 7,
+
+        //Right Face
+        2, 6, 9,
+      ];
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
@@ -273,7 +278,7 @@ function createHouse(l ,h, w) {
     addMaterials(mesh, 0xffffff, 0x000000);
     mesh.position.set(5, 5, 5);
     scene.add(mesh);
-    mesh.rotation.y = 1.3;
+    mesh.rotation.y = 1.5;
 }
 
 //////////////////////
