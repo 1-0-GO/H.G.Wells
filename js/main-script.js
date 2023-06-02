@@ -31,7 +31,7 @@ function addMaterials(mesh, color, emissive) {
         'basic': new THREE.MeshBasicMaterial({ color: color})
     };
     
-    mesh.material = mesh.userData.materials['phong'];
+    mesh.material = mesh.userData.materials['lambert'];
     sceneObjects.push(mesh);
 }
 
@@ -58,8 +58,8 @@ function createScene(){
     axis.visible = true;
     scene.add(axis);  
 
-    let plane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100));
-    addMaterials(plane, 0x00ff00, 0x000000);
+    let plane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100, 100, 100));
+    addMaterials(plane, 0x669933, 0x003300);
     plane.position.set(0, 0, 0);
     plane.rotation.x = -Math.PI / 2
     scene.add(plane);
