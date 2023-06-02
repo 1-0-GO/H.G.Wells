@@ -128,7 +128,7 @@ function createCylinderSpotlight(obj, radius) {
     const spotLightTarget = new THREE.Object3D();
     spotLightTarget.position.set(0, -10, 0);
 
-    const spotlight = new THREE.SpotLight(orangeLight, 1, 0, Math.PI / 4, 0.5);;
+    const spotlight = new THREE.SpotLight(orangeLight, 1.2, 0, Math.PI / 3, 0.5);;
 
     spotlight.target = spotLightTarget;
     spotlight.add(spotLightTarget);
@@ -326,6 +326,7 @@ function onKeyUp(e){
         case 'd':
         case 'D':
             directionalLight.visible = !directionalLight.visible;
+            break;
         case 'q':
         case 'Q':
             changeMaterials('lambert');
