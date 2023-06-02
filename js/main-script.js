@@ -65,7 +65,7 @@ function createScene(){
     scene.add(axis);  
 
     let plane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100, 100, 100));
-    addMaterials(plane, 0x669933, 0x003300);
+    addMaterials(plane, 0x669933);
     plane.position.set(0, 0, 0);
     plane.rotation.x = -Math.PI / 2
     scene.add(plane);
@@ -159,7 +159,7 @@ function createSmallSpheres(obj, radius, smallSphereRadius, numSmallSpheres, seg
 function createCockpit(obj, radius, segments) {
     const cockpitGeometry = new THREE.SphereGeometry(radius, segments, segments, 0, Math.PI*2, 0, Math.PI/2);
     const cockpitMesh = new THREE.Mesh(cockpitGeometry);
-    addMaterials(cockpitMesh, 0xffffff, 0x000000);
+    addMaterials(cockpitMesh, 0xffffff);
     cockpitMesh.position.y = radius;
     obj.add(cockpitMesh);
 }
@@ -168,7 +168,7 @@ function createMainBody(radius, segments) {
     const bodyGeometry = new THREE.SphereGeometry(radius, segments, segments);
     bodyGeometry.scale(1, 1/3, 1);
     const bodyMesh = new THREE.Mesh(bodyGeometry);
-    addMaterials(bodyMesh, 0x3355aa, 0x000000);
+    addMaterials(bodyMesh, 0x3355aa);
     return bodyMesh;
 }
 
