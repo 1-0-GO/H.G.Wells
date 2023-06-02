@@ -1,15 +1,15 @@
 //////////////////////
-/* GLOBAL VARIABLES */
+/* GLOBAL letIABLES */
 //////////////////////
 // cameras
-var activeCamera; 
+let activeCamera; 
 const cameras = {};
 //lights
-var directionalLight;
-var ambientLight;
+let directionalLight;
+let ambientLight;
 // 3D objects
-var moon;
-var ufo;
+let moon;
+let ufo;
 const axis = new THREE.AxesHelper(20);
 const updatables = [];
 const sceneObjects = [];
@@ -17,7 +17,7 @@ const sceneObjects = [];
 const orangeLight = 0xcdaf55;
 // other 
 const clock = new THREE.Clock();
-var scene, renderer;
+let scene, renderer;
 const arrowKeysState = {
     'ArrowUp': false,
     'ArrowDown': false,
@@ -58,6 +58,7 @@ function createScene(){
     moon = createMoon(4);
     moon.position.set(-30, 20, -5);
     ufo = createUFO(3, 0.15, 12);
+    createHouse();
     ufo.position.set(10, 16, -5);
     directionalLight = createDirectionalLight(1, 1, 1);
     ambientLight = createAmbientLight();
@@ -65,7 +66,7 @@ function createScene(){
     scene.add(axis);  
 
     let plane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100, 100, 100));
-    addMaterials(plane, 0x669933);
+    addMaterials(plane, 0x669933, 0x000000);
     plane.position.set(0, 0, 0);
     plane.rotation.x = -Math.PI / 2
     scene.add(plane);
@@ -76,7 +77,7 @@ function createScene(){
 //////////////////////
 function createPerspectiveCamera(x,y,z) {
     'use strict';
-    var camera = new THREE.PerspectiveCamera( 80,
+    let camera = new THREE.PerspectiveCamera( 80,
                                          window.innerWidth / window.innerHeight,
                                          1,
                                          1000 );
@@ -102,7 +103,7 @@ function createDirectionalLight(x, y, z) {
 }
 
 function createAmbientLight() {
-    const ambientLight = new THREE.AmbientLight(0x333333, 0.2);
+    const ambientLight = new THREE.AmbientLight(0x777777, 0.2);
     scene.add(ambientLight);
     return ambientLight;
 }
@@ -159,7 +160,7 @@ function createSmallSpheres(obj, radius, smallSphereRadius, numSmallSpheres, seg
 function createCockpit(obj, radius, segments) {
     const cockpitGeometry = new THREE.SphereGeometry(radius, segments, segments, 0, Math.PI*2, 0, Math.PI/2);
     const cockpitMesh = new THREE.Mesh(cockpitGeometry);
-    addMaterials(cockpitMesh, 0xffffff);
+    addMaterials(cockpitMesh, 0xffffff, 0x000000);
     cockpitMesh.position.y = radius;
     obj.add(cockpitMesh);
 }
@@ -168,7 +169,7 @@ function createMainBody(radius, segments) {
     const bodyGeometry = new THREE.SphereGeometry(radius, segments, segments);
     bodyGeometry.scale(1, 1/3, 1);
     const bodyMesh = new THREE.Mesh(bodyGeometry);
-    addMaterials(bodyMesh, 0x3355aa);
+    addMaterials(bodyMesh, 0x3355aa, 0x000000);
     return bodyMesh;
 }
 
@@ -206,6 +207,37 @@ function createUFO(radius, smallSphereRadius, numSmallSpheres) {
 
     scene.add(ufo);
     return ufo;
+}
+
+function createHouse() {
+    const vertices = new Float32Array([
+        2, -1, 2, 
+        2, -1, -2,
+        2, 1, -2, 
+        2, 1, 2, 
+        1.5, 1.5, 0,
+        -1.5, 1.5, 0,
+        -2, -1, 2, 
+        -2, 1, 2, 
+        -2, 1, -2,  
+        -2, -1, -2 
+    ]);
+
+    const indices = [
+        0, 3, 1,
+        3, 2, 1,
+        2, 8, 3,
+        3, 8, 7,
+    ];
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
+    geometry.setIndex(indices);
+    const mesh = new THREE.Mesh(geometry);
+    addMaterials(mesh, 0xffffff, 0x000000);
+    mesh.position.set(5, 5, 5);
+    mesh.rotation.y = 1.2;
+    scene.add(mesh);
 }
 
 //////////////////////
@@ -299,7 +331,7 @@ function onResize() {
 ///////////////////////
 function onKeyDown(e) {
     'use strict';
-    var key = e.key;
+    let key = e.key;
     switch(key) {
         case 'ArrowUp': 
         case 'ArrowDown':
@@ -318,7 +350,7 @@ function onKeyDown(e) {
 ///////////////////////
 function onKeyUp(e){
     'use strict';
-    var key = e.key;
+    let key = e.key;
     switch (key) {
         case '1':
             activeCamera =  cameras[key];
