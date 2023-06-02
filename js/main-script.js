@@ -224,8 +224,8 @@ function createHouse(l ,h, w) {
         -l, h, -w,   // Vertex 7
 
         // Pyramid top
-        -0.8 * l, 3.5 * h, 0, // Vertex 8
-        0.8 * l, 3.5 * h, 0  // Vertex 9
+        -0.8 * l, 2.0 * h, 0, // Vertex 8
+        0.8 * l, 2.0 * h, 0  // Vertex 9
       ]);
       
       // Create an array to define the parallelepiped's faces using indices
@@ -258,11 +258,7 @@ function createHouse(l ,h, w) {
         //Roof
         //Front Face
         3, 2, 9,
-        9, 8, 2,
-
-        //Back Face
-        7, 9, 6,
-        6, 9, 8,
+        9, 8, 3,
 
         //Left Face
         3, 8, 7,
@@ -278,7 +274,7 @@ function createHouse(l ,h, w) {
     addMaterials(mesh, 0xffffff, 0x000000);
     mesh.position.set(5, 5, 5);
     scene.add(mesh);
-    mesh.rotation.y = 1.5;
+    mesh.rotation.y = 0.5;
 }
 
 //////////////////////
