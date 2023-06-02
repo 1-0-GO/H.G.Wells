@@ -18,6 +18,12 @@ const orangeLight = 0xcdaf55;
 // other 
 const clock = new THREE.Clock();
 var scene, renderer;
+const arrowKeysState = {
+    'ArrowUp': false,
+    'ArrowDown': false,
+    'ArrowLeft': false,
+    'ArrowRight': false,
+  };
 
 ////////////////////////
 /* AUXILARY FUNCTIONS */
@@ -48,7 +54,7 @@ function changeMaterials(materialName) {
 function createScene(){
     'use strict';
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+    scene.background = new THREE.Color(0x040b28);
     moon = createMoon(4);
     moon.position.set(-30, 20, -5);
     ufo = createUFO(3, 0.15, 12);
@@ -174,8 +180,29 @@ function createUFO(radius, smallSphereRadius, numSmallSpheres) {
         spotlight: undefined,
         pointLights : []
     }
+    ufo.userData.speed = 10;
+    ufo.userData.rotationSpeed = 3.5;
     createSmallSpheres(ufo, radius, smallSphereRadius, numSmallSpheres, segments);
     createCylinderSpotlight(ufo, radius);
+
+    updatables.push(ufo);
+    ufo.userData.tick = (delta) => {
+        const direction = new THREE.Vector3();
+        // Calculate the trailer's direction based on the pressed keys
+        direction.x = Number(arrowKeysState['ArrowRight']) - Number(arrowKeysState['ArrowLeft']);
+        direction.z = Number(arrowKeysState['ArrowUp']) - Number(arrowKeysState['ArrowDown'])
+        direction.normalize();
+
+        // Update to new position based on the direction, speed and time elapsed
+        const dx = direction.x * delta * ufo.userData.speed;
+        const dz = direction.z * delta * ufo.userData.speed;
+        const newPosition = ufo.position.clone();
+        newPosition.x += dx;
+        newPosition.z += dz;
+
+        ufo.position.copy(newPosition);
+        ufo.rotation.y += ufo.userData.rotationSpeed * delta;
+    }    
 
     scene.add(ufo);
     return ufo;
@@ -272,7 +299,18 @@ function onResize() {
 ///////////////////////
 function onKeyDown(e) {
     'use strict';
-
+    var key = e.key;
+    switch(key) {
+        case 'ArrowUp': 
+        case 'ArrowDown':
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            arrowKeysState[key] = true;
+            break;   
+        default:
+            // Do nothing for other keys
+            return; 
+    }
 }
 
 ///////////////////////
@@ -314,7 +352,16 @@ function onKeyUp(e){
             for(const pointLight of ufo.userData.lights.pointLights) {
                 pointLight.visible = !pointLight.visible;
             }
-            break;           
+            break;    
+        case 'ArrowUp': 
+        case 'ArrowDown':
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            arrowKeysState[key] = false;
+            break;   
+        default:
+            // Do nothing for other keys
+            return;                
     }        
 
 }
