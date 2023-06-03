@@ -10,6 +10,7 @@ let ambientLight;
 // 3D objects
 let moon;
 let ufo;
+let house;
 const axis = new THREE.AxesHelper(20);
 const updatables = [];
 const sceneObjects = [];
@@ -63,7 +64,7 @@ function createScene(){
     moon = createMoon(4);
     moon.position.set(-30, 20, -5);
     ufo = createUFO(3, 0.15, 12);
-    createHouse(8, 2.5, 2.5);
+    house = createHouse(10, 2.5, 2.5);
     createSkyDome();
     ufo.position.set(10, 16, -5);
     directionalLight = createDirectionalLight(1, 1, 1);
@@ -71,11 +72,7 @@ function createScene(){
     axis.visible = true;
     scene.add(axis);  
 
-    let plane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100, 100, 100));
-    addMaterials(plane, 0x669933, 0x000000);
-    plane.position.set(0, 0, 0);
-    plane.rotation.x = -Math.PI / 2
-    scene.add(plane);
+    const plane = createFloor(0x669933);
 }
 
 //////////////////////
@@ -354,20 +351,29 @@ function createHouse(length, height, width) {
     house.position.set(5, height, 5);
     house.rotation.y = 0.2;
     scene.add(house);
+    return house;
 }
 
 function createSkyDome() {
-    var geometry = new THREE.SphereGeometry(100, 32, 32); 
-    var material = new THREE.MeshBasicMaterial({ side: THREE.BackSide }); 
-    var sphere = new THREE.Mesh(geometry, material);
+    let geometry = new THREE.SphereGeometry(100, 32, 32); 
+    let material = new THREE.MeshBasicMaterial({ side: THREE.BackSide }); 
+    let sphere = new THREE.Mesh(geometry, material);
 
-    var textureLoader = new THREE.TextureLoader();
+    let textureLoader = new THREE.TextureLoader();
     textureLoader.load('../recursos/ceu_estrelado.jpeg', function(texture) {
     material.map = texture;
     material.needsUpdate = true;
     });
 
     scene.add(sphere); 
+}
+
+function createFloor(color) {
+    let plane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100, 100, 100));
+    addMaterials(plane, color, 0x000000);
+    plane.rotation.x = -Math.PI / 2
+    scene.add(plane);
+    return plane;
 }
 
 ////////////
