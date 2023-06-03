@@ -254,9 +254,6 @@ function createRoof(obj, vertices, color) {
         1, 0, 5,
         5, 4, 1,
 
-        //Left Face
-        1, 4, 3,
-
         //Right Face
         0, 2, 5,
       ];
