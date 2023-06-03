@@ -361,8 +361,11 @@ function createSkyDome() {
 
     let textureLoader = new THREE.TextureLoader();
     textureLoader.load('../recursos/ceu_estrelado.jpeg', function(texture) {
-    material.map = texture;
-    material.needsUpdate = true;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(2, 2);
+        material.map = texture;
+        material.needsUpdate = true;
     });
 
     scene.add(sphere); 
