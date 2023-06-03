@@ -232,10 +232,6 @@ function createFourWalls(obj, vertices, color) {
         1, 8, 19,
         19, 8, 20,
       
-        // Top face
-        3, 2, 6,
-        3, 6, 7,
-      
         // Right face
         22, 5, 6,
         22, 6, 2,
@@ -358,7 +354,7 @@ function createHouse(length, height, width) {
     const rightWindow = createRectangle(house, rightWindowVertices, 0x0000ff);
 
     house.position.set(5, height, 5);
-    house.rotation.y = 1.0;
+    house.rotation.y = 0.2;
     scene.add(house);
 }
 
