@@ -1,5 +1,5 @@
 //////////////////////
-/* GLOBAL letIABLES */
+/* GLOBAL VARIABLES */
 //////////////////////
 // cameras
 let activeCamera; 
@@ -47,6 +47,11 @@ function changeMaterials(materialName) {
     }
 }
 
+function selectVertices(allVertices, indices) {
+    const selectedVertices = indices.flatMap(index => allVertices.slice(index * 3, index * 3 + 3));
+    return new Float32Array(selectedVertices);
+  }
+
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -58,7 +63,7 @@ function createScene(){
     moon = createMoon(4);
     moon.position.set(-30, 20, -5);
     ufo = createUFO(3, 0.15, 12);
-    createHouse(6, 2, 2);
+    createHouse(8, 2.5, 2.5);
     ufo.position.set(10, 16, -5);
     directionalLight = createDirectionalLight(1, 1, 1);
     ambientLight = createAmbientLight();
@@ -209,28 +214,8 @@ function createUFO(radius, smallSphereRadius, numSmallSpheres) {
     return ufo;
 }
 
-function createHouse(l ,h, w) {
-    const vertices = new Float32Array([
-        // Front face
-        -l, -h, w,  // Vertex 0
-        l, -h, w,   // Vertex 1
-        l, h, w,    // Vertex 2
-        -l, h, w,   // Vertex 3
-      
-        // Back face
-        -l, -h, -w, // Vertex 4
-        l, -h, -w,  // Vertex 5
-        l, h, -w,   // Vertex 6
-        -l, h, -w,   // Vertex 7
-
-        // Pyramid top
-        -0.8 * l, 2.0 * h, 0, // Vertex 8
-        0.8 * l, 2.0 * h, 0  // Vertex 9
-      ]);
-      
-      // Create an array to define the parallelepiped's faces using indices
-      const indices = [
-        // Parallellepiped
+function createFourWalls(obj, vertices, color) {
+    const indices = [
         // Front face
         0, 1, 2,
         2, 3, 0,
@@ -254,27 +239,131 @@ function createHouse(l ,h, w) {
         // Right face
         1, 5, 6,
         1, 6, 2,
-
-        //Roof
-        //Front Face
-        3, 2, 9,
-        9, 8, 3,
-
-        //Left Face
-        3, 8, 7,
-
-        //Right Face
-        2, 6, 9,
       ];
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
     geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
     const mesh = new THREE.Mesh(geometry);
-    addMaterials(mesh, 0xffffff, 0x000000);
-    mesh.position.set(5, 5, 5);
-    scene.add(mesh);
-    mesh.rotation.y = 0.5;
+    addMaterials(mesh, color, 0x000000);
+    obj.add(mesh);
+    return mesh;
+}
+
+function createRoof(obj, vertices, color) {
+    const indices = [
+        //Front Face
+        1, 0, 5,
+        5, 4, 1,
+
+        //Left Face
+        1, 4, 3,
+
+        //Right Face
+        0, 2, 5,
+      ];
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geometry);
+    addMaterials(mesh, color, 0x000000);
+    obj.add(mesh);
+    return mesh;
+}
+
+function createSkirt(obj, vertices, color) {
+    const indices = [
+        0, 1, 2,
+        3, 2, 1,
+      ];
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geometry);
+    addMaterials(mesh, color, 0x000000);
+    obj.add(mesh);
+    return mesh;
+}
+
+function createRectangle(obj, l, h, color) {
+    const vertices = new Float32Array([
+        -l, h, 0,   // Vertex 0
+        -l, -h, 0,  // Vertex 1
+        l, -h, 0,   // Vertex 2
+        l, h, 0     // Vertex 3
+    ]);
+    
+    const indices = [
+        0, 1, 2,    // Face 0
+        2, 3, 0     // Face 1
+    ];
+    
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    
+    const mesh = new THREE.Mesh(geometry);
+    addMaterials(mesh, color, 0x000000);
+    obj.add(mesh);  
+    return mesh;
+}
+
+
+function createHouse(length, height, width) {
+    const house = new THREE.Group();
+    const vertices = [
+        // Front face
+        -length, -height, width,  // Vertex 0
+        length, -height, width,   // Vertex 1
+        length, height, width,    // Vertex 2
+        -length, height, width,   // Vertex 3
+      
+        // Back face
+        -length, -height, -width,   // Vertex 4
+        length, -height, -width,   // Vertex 5
+        length, height, -width,   // Vertex 6
+        -length, height, -width,  // Vertex 7
+
+        // Pyramid top
+        -0.8 * length, 2.0 * height, 0, // Vertex 8
+        0.8 * length, 2.0 * height, 0,  // Vertex 9
+
+        //Skirt
+        -length, -0.6 * height, width,  // Vertex 10
+        length, -0.6 * height, width   // Vertex 11
+      ];
+
+    const wallsVertices = selectVertices(vertices, [0, 1, 2, 3, 4, 5, 6, 7]);
+    const walls = createFourWalls(house, wallsVertices, 0xf5f5dc);
+
+    const roofVertices = selectVertices(vertices, [2, 3, 6, 7, 8, 9]);
+    const roof = createRoof(house, roofVertices, 0xff8c40);
+
+    const skirtVertices = selectVertices(vertices, [0, 1, 10, 11]);
+    const skirt = createSkirt(house, skirtVertices, 0x0000ff);
+
+    const windowSide = 0.4 * height;
+    const window1 = createRectangle(house, windowSide, windowSide, 0x0000ff);
+    window1.position.set(0.6 * length, 0, width);
+
+    const window2 = createRectangle(house, windowSide, windowSide, 0x0000ff);
+    window2.position.set(-0.6 * length, 0, width);
+
+    const door = createRectangle(house, 0.4 * height, 0.7 * height, 0x0000ff);
+    door.position.set(0, 0, width);
+
+    house.position.set(5, 4, 5);
+    house.rotation.y = 1.0;
+    scene.add(house);
 }
 
 //////////////////////
