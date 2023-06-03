@@ -217,8 +217,20 @@ function createUFO(radius, smallSphereRadius, numSmallSpheres) {
 function createFourWalls(obj, vertices, color) {
     const indices = [
         // Front face
-        0, 1, 2,
-        2, 3, 0,
+        9, 8, 2,
+        2, 3, 9,
+        9, 14, 17,
+        0, 14, 9,
+        0, 15, 14,
+        15, 0, 10,
+        10, 13, 15,
+        13, 16, 15,
+        12, 18, 21,
+        11, 18, 12,
+        11, 19, 18,
+        11, 1, 19,
+        1, 8, 19,
+        19, 8, 20,
       
         // Back face
         4, 6, 5,
@@ -276,10 +288,10 @@ function createRoof(obj, vertices, color) {
     return mesh;
 }
 
-function createSkirt(obj, vertices, color) {
+function createRectangle(obj, vertices, color) {
     const indices = [
         0, 1, 2,
-        3, 2, 1,
+        2, 3, 0
       ];
 
     const geometry = new THREE.BufferGeometry();
@@ -292,31 +304,6 @@ function createSkirt(obj, vertices, color) {
     obj.add(mesh);
     return mesh;
 }
-
-function createRectangle(obj, l, h, color) {
-    const vertices = new Float32Array([
-        -l, h, 0,   // Vertex 0
-        -l, -h, 0,  // Vertex 1
-        l, -h, 0,   // Vertex 2
-        l, h, 0     // Vertex 3
-    ]);
-    
-    const indices = [
-        0, 1, 2,    // Face 0
-        2, 3, 0     // Face 1
-    ];
-    
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geometry.setIndex(indices);
-    geometry.computeVertexNormals();
-    
-    const mesh = new THREE.Mesh(geometry);
-    addMaterials(mesh, color, 0x000000);
-    obj.add(mesh);  
-    return mesh;
-}
-
 
 function createHouse(length, height, width) {
     const house = new THREE.Group();
@@ -337,29 +324,50 @@ function createHouse(length, height, width) {
         -0.8 * length, 2.0 * height, 0, // Vertex 8
         0.8 * length, 2.0 * height, 0,  // Vertex 9
 
-        //Skirt
+        // Skirt
         -length, -0.6 * height, width,  // Vertex 10
-        length, -0.6 * height, width   // Vertex 11
+        length, -0.6 * height, width,   // Vertex 11
+
+        // Auxilary
+        length, 0.6 * height, width,  // Vertex 12
+        -length, 0.6 * height, width,   // Vertex 13
+
+        // Door
+        -0.1 * length, -0.6 * height, width,  // Vertex 14
+        0.1 * length, -0.6 * height, width,   // Vertex 15
+        0.1 * length, 0.6 * height, width,  // Vertex 16
+        -0.1 * length, 0.6 * height, width,   // Vertex 17
+
+        // Left Window
+        -0.7 * length, 0, width,  // Vertex 18
+        -0.5 * length, 0, width,   // Vertex 19
+        -0.5 * length, 0.6 * height, width,  // Vertex 20
+        -0.7 * length, 0.6 * height, width,   // Vertex 21
+
+        // Right Window
+        0.5 * length, 0, width,  // Vertex 22
+        0.7 * length, 0, width,   // Vertex 23
+        0.7 * length, 0.6 * height, width,  // Vertex 24
+        0.5 * length, 0.6 * height, width   // Vertex 25
       ];
 
-    const wallsVertices = selectVertices(vertices, [0, 1, 2, 3, 4, 5, 6, 7]);
+    const wallsVertices = selectVertices(vertices, [10, 11, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]);
     const walls = createFourWalls(house, wallsVertices, 0xf5f5dc);
 
     const roofVertices = selectVertices(vertices, [2, 3, 6, 7, 8, 9]);
     const roof = createRoof(house, roofVertices, 0xff8c40);
 
-    const skirtVertices = selectVertices(vertices, [0, 1, 10, 11]);
-    const skirt = createSkirt(house, skirtVertices, 0x0000ff);
+    const skirtVertices = selectVertices(vertices, [0, 1, 11, 10]);
+    const skirt = createRectangle(house, skirtVertices, 0x0000ff);
 
-    const windowSide = 0.4 * height;
-    const window1 = createRectangle(house, windowSide, windowSide, 0x0000ff);
-    window1.position.set(0.6 * length, 0, width);
+    const doorVertices = selectVertices(vertices, [14, 15, 16, 17]);
+    const door = createRectangle(house, doorVertices, 0x0000ff);
 
-    const window2 = createRectangle(house, windowSide, windowSide, 0x0000ff);
-    window2.position.set(-0.6 * length, 0, width);
+    const leftWindowVertices = selectVertices(vertices, [18, 19, 20, 21]);
+    const leftWindow = createRectangle(house, leftWindowVertices, 0x0000ff);
 
-    const door = createRectangle(house, 0.4 * height, 0.7 * height, 0x0000ff);
-    door.position.set(0, 0, width);
+    const rightWindowVertices = selectVertices(vertices, [22, 23, 24, 25]);
+    const rightWindow = createRectangle(house, rightWindowVertices, 0x0000ff);
 
     house.position.set(5, 4, 5);
     house.rotation.y = 1.0;
