@@ -232,25 +232,13 @@ function createFourWalls(obj, vertices, color) {
         1, 8, 19,
         19, 8, 20,
       
-        // Back face
-        4, 6, 5,
-        4, 7, 6,
-      
         // Top face
         3, 2, 6,
         3, 6, 7,
       
-        // Bottom face
-        0, 4, 1,
-        1, 4, 5,
-      
-        // Left face
-        0, 3, 7,
-        0, 7, 4,
-      
         // Right face
-        1, 5, 6,
-        1, 6, 2,
+        22, 5, 6,
+        22, 6, 2,
       ];
 
     const geometry = new THREE.BufferGeometry();
@@ -351,7 +339,7 @@ function createHouse(length, height, width) {
         0.5 * length, 0.6 * height, width   // Vertex 25
       ];
 
-    const wallsVertices = selectVertices(vertices, [10, 11, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]);
+    const wallsVertices = selectVertices(vertices, [10, 11, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 1]);
     const walls = createFourWalls(house, wallsVertices, 0xf5f5dc);
 
     const roofVertices = selectVertices(vertices, [2, 3, 6, 7, 8, 9]);
@@ -369,7 +357,7 @@ function createHouse(length, height, width) {
     const rightWindowVertices = selectVertices(vertices, [22, 23, 24, 25]);
     const rightWindow = createRectangle(house, rightWindowVertices, 0x0000ff);
 
-    house.position.set(5, 4, 5);
+    house.position.set(5, height, 5);
     house.rotation.y = 1.0;
     scene.add(house);
 }
