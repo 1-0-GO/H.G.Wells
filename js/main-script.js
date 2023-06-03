@@ -64,6 +64,7 @@ function createScene(){
     moon.position.set(-30, 20, -5);
     ufo = createUFO(3, 0.15, 12);
     createHouse(8, 2.5, 2.5);
+    createSkyDome();
     ufo.position.set(10, 16, -5);
     directionalLight = createDirectionalLight(1, 1, 1);
     ambientLight = createAmbientLight();
@@ -355,20 +356,18 @@ function createHouse(length, height, width) {
     scene.add(house);
 }
 
-//////////////////////
-/* CHECK COLLISIONS */
-//////////////////////
-function checkCollisions(){
-    'use strict';
+function createSkyDome() {
+    var geometry = new THREE.SphereGeometry(100, 32, 32); 
+    var material = new THREE.MeshBasicMaterial({ side: THREE.BackSide }); 
+    var sphere = new THREE.Mesh(geometry, material);
 
-}
+    var textureLoader = new THREE.TextureLoader();
+    textureLoader.load('../recursos/ceu_estrelado.jpeg', function(texture) {
+    material.map = texture;
+    material.needsUpdate = true;
+    });
 
-///////////////////////
-/* HANDLE COLLISIONS */
-///////////////////////
-function handleCollisions(){
-    'use strict';
-
+    scene.add(sphere); 
 }
 
 ////////////
