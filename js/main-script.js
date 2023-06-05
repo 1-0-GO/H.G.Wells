@@ -460,7 +460,7 @@ context.width, context.height);
 
     var textureLoader = new THREE.TextureLoader();
     textureLoader.load('https://web.tecnico.ulisboa.pt/~ist199068/recursos/heightmap.png', function(texture) {
-        const color = 0xffffff;
+        const color = 0x7DB600;
         const width = 1000;
         const height = 1000;
         const segmentsX = 100;
@@ -495,8 +495,7 @@ context.width, context.height);
         }
 
         context.putImageData(imageData, 0, 0);
-        const newTexture =  new THREE.Texture(canvas);
-        newTexture.needsUpdate = true;
+        const newTexture =  new THREE.CanvasTexture(canvas);
         var mesh = new THREE.Mesh(geometry);
         addMaterials(mesh, color, 0x000000, newTexture, false);
         mesh.rotation.x = Math.PI * -0.5
