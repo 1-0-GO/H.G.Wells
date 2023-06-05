@@ -72,7 +72,7 @@ function createScene(){
     axis.visible = true;
     scene.add(axis);  
 
-    const plane = createFloor(0x7DB600);
+    const plane = createFloor();
 }
 
 //////////////////////
@@ -212,6 +212,69 @@ function createUFO(radius, smallSphereRadius, numSmallSpheres) {
     return ufo;
 }
 
+function createFrontWall(obj, vertices, color) { 
+    const indices = [
+        9, 8, 2,
+        2, 3, 9,
+        9, 14, 17,
+        0, 14, 9,
+        0, 15, 14,
+        15, 0, 10,
+        10, 13, 15,
+        13, 16, 15,
+        12, 18, 21,
+        11, 18, 12,
+        11, 19, 18,
+        11, 1, 19,
+        1, 8, 19,
+        19, 8, 20,
+      ];
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geometry);
+    addMaterials(mesh, color, 0x000000, null, false);
+    obj.add(mesh);
+    return mesh; 
+}
+
+function createBackWall(obj, vertices, color) {
+    const indices = [
+        1, 3, 2,
+        3, 1, 0
+      ];
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geometry);
+    addMaterials(mesh, color, 0x000000, null, false);
+    obj.add(mesh);
+    return mesh;
+}
+
+function createLeftWall(obj, vertices, color) {
+    const indices = [
+         0, 3, 1,
+         3, 2, 1,
+      ];
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geometry);
+    addMaterials(mesh, color, 0x000000, null, false);
+    obj.add(mesh);
+    return mesh;
+}
+
 function createFourWalls(obj, vertices, color) {
     const indices = [
         // Front face
@@ -338,8 +401,14 @@ function createHouse(length, height, width) {
         0.5 * length, 0.6 * height, width   // Vertex 25
       ];
 
-    const wallsVertices = selectVertices(vertices, [10, 11, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 1, 0]);
-    const walls = createFourWalls(house, wallsVertices, 0xf5f5dc);
+    const frontWallVertices = selectVertices(vertices, [10, 11, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]);
+    const frontWall = createFrontWall(house, frontWallVertices, 0xf5f5dc);
+
+    const backWallVertices = selectVertices(vertices, [4, 5, 6, 7]);
+    const backWall = createRoof(house, backWallVertices, 0xf5f5dc);
+
+    const leftWallVertices = selectVertices(vertices, [0, 4, 7, 3]);
+    const leftWall = createRoof(house, leftWallVertices, 0xf5f5dc);
 
     const roofVertices = selectVertices(vertices, [2, 3, 6, 7, 8, 9]);
     const roof = createRoof(house, roofVertices, 0xff8c40);
@@ -379,29 +448,31 @@ function createSkyDome() {
     scene.add(sphere); 
 }
 
-function createFloor(color) {
+function createFloor() {
 
-    function getPixelDataFromImage(image) {
-        var context = document.createElement('canvas').getContext('2d');
+    function getPixelDataFromImage(context, image) {
         context.width  = image.width;
         context.height = image.height;
         context.drawImage(image, 0, 0, image.width, image.height, 0, 0,
 context.width, context.height);
-        return context.getImageData(0, 0, image.width, image.height).data;
+        return context.getImageData(0, 0, image.width, image.height);
     }
 
     var textureLoader = new THREE.TextureLoader();
     textureLoader.load('https://web.tecnico.ulisboa.pt/~ist199068/recursos/heightmap.png', function(texture) {
-        var width = 1000; 
-        var height = 1000; 
-        var segmentsX = 100; 
-        var segmentsY = 100; 
-        var maxHeight = 255; 
-        var heightOffset = -80; 
+        const color = 0xffffff;
+        const width = 1000;
+        const height = 1000;
+        const segmentsX = 100;
+        const segmentsY = 100;
+        const maxHeight = 255;
+        const heightOffset = -80;
+        const geometry = new THREE.PlaneGeometry(width, height, segmentsX, segmentsY);
 
-        var geometry = new THREE.PlaneGeometry(width, height, segmentsX, segmentsY);
-
-        var data = getPixelDataFromImage(texture.image);
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const imageData = getPixelDataFromImage(context, texture.image);
+        const data = imageData.data;
         var vertices = geometry.getAttribute('position');
         let planeCS = geometry.getAttribute('uv').array;
         var textureWidth = texture.image.width;
@@ -413,13 +484,21 @@ context.width, context.height);
             let col = Math.min(Math.floor(textureWidth * u), textureWidth-1) * 4;
             let row = Math.min(Math.floor(textureHeight * v), textureHeight-1) * 4;
             var k = row * textureWidth + col; 
+            let grayscale = data[k];
 
-            var z = data[k] / 255.0 *  maxHeight + heightOffset;
+            var z = grayscale / 255.0 *  maxHeight + heightOffset;
             vertices.array[j] = z; 
+            const blendedColor = new THREE.Color().copy(color).multiplyScalar(grayscale / 255);
+            data[k] = blendedColor.r * 255;
+            data[k + 1] = blendedColor.g * 255;
+            data[k + 2] = blendedColor.b * 255;
         }
 
+        context.putImageData(imageData, 0, 0);
+        const newTexture =  new THREE.Texture(canvas);
+        newTexture.needsUpdate = true;
         var mesh = new THREE.Mesh(geometry);
-        addMaterials(mesh, color, 0x000000, texture, false);
+        addMaterials(mesh, color, 0x000000, newTexture, false);
         mesh.rotation.x = Math.PI * -0.5
 
         scene.add(mesh);
