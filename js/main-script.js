@@ -442,7 +442,7 @@ context.width, context.height);
 
     var textureLoader = new THREE.TextureLoader();
     textureLoader.load('https://web.tecnico.ulisboa.pt/~ist199068/recursos/heightmap.png', function(texture) {
-        const color = 0x7DB600;
+        const color = 0x7FFF00;
         const width = 1000;
         const height = 1000;
         const segmentsX = 100;
