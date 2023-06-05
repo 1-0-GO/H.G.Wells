@@ -30,12 +30,12 @@ const arrowKeysState = {
 /* AUXILARY FUNCTIONS */
 ////////////////////////
 
-function addMaterials(mesh, color, emissive) {
+function addMaterials(mesh, color, emissive, texture, wireframe) {
     mesh.userData.materials = {
-        'lambert': new THREE.MeshLambertMaterial({ color: color, emissive: emissive }),
-        'phong': new THREE.MeshPhongMaterial({ color: color, emissive: emissive }),
-        'toon': new THREE.MeshToonMaterial({ color: color, emissive: emissive }),
-        'basic': new THREE.MeshBasicMaterial({ color: color})
+        'lambert': new THREE.MeshLambertMaterial({ color: color, emissive: emissive, map: texture, wireframe: wireframe}),
+        'phong': new THREE.MeshPhongMaterial({ color: color, emissive: emissive, map: texture, wireframe: wireframe }),
+        'toon': new THREE.MeshToonMaterial({ color: color, emissive: emissive, map: texture, wireframe: wireframe }),
+        'basic': new THREE.MeshBasicMaterial({ color: color, map: texture, wireframe: wireframe })
     };
     
     mesh.material = mesh.userData.materials['lambert'];
@@ -72,7 +72,7 @@ function createScene(){
     axis.visible = true;
     scene.add(axis);  
 
-    const plane = createFloor(0x669933);
+    const plane = createFloor(0x7DB600);
 }
 
 //////////////////////
@@ -117,7 +117,7 @@ function createAmbientLight() {
 function createMoon(radius) {
     const moonGeometry = new THREE.SphereGeometry(radius, 32, 32);
     const moon = new THREE.Mesh(moonGeometry);
-    addMaterials(moon, 0xffffbb, 0xffff44);
+    addMaterials(moon, 0xffffbb, 0xffff44, null, false);
     scene.add(moon);
     return moon;
 }
@@ -125,7 +125,7 @@ function createMoon(radius) {
 function createCylinderSpotlight(obj, radius) {
     const cylinderGeometry = new THREE.CylinderGeometry(radius/3, radius/3, radius/6, segments);
     const cylinderMesh = new THREE.Mesh(cylinderGeometry);
-    addMaterials(cylinderMesh, 0xaaaa55, 0xff0000);
+    addMaterials(cylinderMesh, 0xaaaa55, 0xff0000, null, false);
     cylinderMesh.position.y = -radius/3; 
     obj.add(cylinderMesh);
 
@@ -147,7 +147,7 @@ function createSmallSpheres(obj, radius, smallSphereRadius, numSmallSpheres, seg
 
     for (let i = 0; i < numSmallSpheres; i++) {
         const smallSphereMesh = new THREE.Mesh(smallSphereGeometry);
-        addMaterials(smallSphereMesh, 0xaaaa55, 0xff0000);
+        addMaterials(smallSphereMesh, 0xaaaa55, 0xff0000, null, false);
         const angle = (i / numSmallSpheres) * Math.PI * 2;
         const radiusOffset = radius * 0.7; // Offset from the center of the body
         smallSphereMesh.position.set(Math.cos(angle) * radiusOffset, -radius/3, Math.sin(angle) * radiusOffset);
@@ -163,7 +163,7 @@ function createSmallSpheres(obj, radius, smallSphereRadius, numSmallSpheres, seg
 function createCockpit(obj, radius, segments) {
     const cockpitGeometry = new THREE.SphereGeometry(radius, segments, segments, 0, Math.PI*2, 0, Math.PI/2);
     const cockpitMesh = new THREE.Mesh(cockpitGeometry);
-    addMaterials(cockpitMesh, 0xffffff, 0x000000);
+    addMaterials(cockpitMesh, 0xffffff, 0x000000, null, false);
     cockpitMesh.position.y = radius;
     obj.add(cockpitMesh);
 }
@@ -172,7 +172,7 @@ function createMainBody(radius, segments) {
     const bodyGeometry = new THREE.SphereGeometry(radius, segments, segments);
     bodyGeometry.scale(1, 1/3, 1);
     const bodyMesh = new THREE.Mesh(bodyGeometry);
-    addMaterials(bodyMesh, 0x3355aa, 0x000000);
+    addMaterials(bodyMesh, 0x3355aa, 0x000000, null, false);
     return bodyMesh;
 }
 
@@ -233,6 +233,14 @@ function createFourWalls(obj, vertices, color) {
         // Right face
         22, 5, 6,
         22, 6, 2,
+
+        //Left face
+        23, 3, 4,
+        3, 7, 4,
+
+        //Back face
+        5, 7, 6,
+        7, 5, 4
       ];
 
     const geometry = new THREE.BufferGeometry();
@@ -241,7 +249,7 @@ function createFourWalls(obj, vertices, color) {
     geometry.computeVertexNormals();
 
     const mesh = new THREE.Mesh(geometry);
-    addMaterials(mesh, color, 0x000000);
+    addMaterials(mesh, color, 0x000000, null, false);
     obj.add(mesh);
     return mesh;
 }
@@ -262,7 +270,7 @@ function createRoof(obj, vertices, color) {
     geometry.computeVertexNormals();
 
     const mesh = new THREE.Mesh(geometry);
-    addMaterials(mesh, color, 0x000000);
+    addMaterials(mesh, color, 0x000000, null, false);
     obj.add(mesh);
     return mesh;
 }
@@ -279,7 +287,7 @@ function createRectangle(obj, vertices, color) {
     geometry.computeVertexNormals();
 
     const mesh = new THREE.Mesh(geometry);
-    addMaterials(mesh, color, 0x000000);
+    addMaterials(mesh, color, 0x000000, null, false);
     obj.add(mesh);
     return mesh;
 }
@@ -330,7 +338,7 @@ function createHouse(length, height, width) {
         0.5 * length, 0.6 * height, width   // Vertex 25
       ];
 
-    const wallsVertices = selectVertices(vertices, [10, 11, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 1]);
+    const wallsVertices = selectVertices(vertices, [10, 11, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 1, 0]);
     const walls = createFourWalls(house, wallsVertices, 0xf5f5dc);
 
     const roofVertices = selectVertices(vertices, [2, 3, 6, 7, 8, 9]);
@@ -355,28 +363,67 @@ function createHouse(length, height, width) {
 }
 
 function createSkyDome() {
-    let geometry = new THREE.SphereGeometry(100, 32, 32); 
+    let geometry = new THREE.SphereGeometry(1000, 64, 64); 
     let material = new THREE.MeshBasicMaterial({ side: THREE.BackSide }); 
-    let sphere = new THREE.Mesh(geometry, material);
 
     let textureLoader = new THREE.TextureLoader();
-    textureLoader.load('../recursos/ceu_estrelado.jpeg', function(texture) {
+    textureLoader.load('https://web.tecnico.ulisboa.pt/~ist199068/recursos/ceu_estrelado.jpeg', function(texture) {
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(2, 2);
+        texture.repeat.set(20, 1);
         material.map = texture;
         material.needsUpdate = true;
     });
 
+    const sphere = new THREE.Mesh(geometry, material);
     scene.add(sphere); 
 }
 
 function createFloor(color) {
-    let plane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100, 100, 100));
-    addMaterials(plane, color, 0x000000);
-    plane.rotation.x = -Math.PI / 2
-    scene.add(plane);
-    return plane;
+
+    function getPixelDataFromImage(image) {
+        var context = document.createElement('canvas').getContext('2d');
+        context.width  = image.width;
+        context.height = image.height;
+        context.drawImage(image, 0, 0, image.width, image.height, 0, 0,
+context.width, context.height);
+        return context.getImageData(0, 0, image.width, image.height).data;
+    }
+
+    var textureLoader = new THREE.TextureLoader();
+    textureLoader.load('https://web.tecnico.ulisboa.pt/~ist199068/recursos/heightmap.png', function(texture) {
+        var width = 1000; 
+        var height = 1000; 
+        var segmentsX = 100; 
+        var segmentsY = 100; 
+        var maxHeight = 255; 
+        var heightOffset = -80; 
+
+        var geometry = new THREE.PlaneGeometry(width, height, segmentsX, segmentsY);
+
+        var data = getPixelDataFromImage(texture.image);
+        var vertices = geometry.getAttribute('position');
+        let planeCS = geometry.getAttribute('uv').array;
+        var textureWidth = texture.image.width;
+        var textureHeight = texture.image.height;
+
+        for (var i = 0, j = 2; i < 2 * vertices.count; i += 2, j += 3) {
+            var u = planeCS[i];
+            var v = planeCS[i + 1];
+            let col = Math.min(Math.floor(textureWidth * u), textureWidth-1) * 4;
+            let row = Math.min(Math.floor(textureHeight * v), textureHeight-1) * 4;
+            var k = row * textureWidth + col; 
+
+            var z = data[k] / 255.0 *  maxHeight + heightOffset;
+            vertices.array[j] = z; 
+        }
+
+        var mesh = new THREE.Mesh(geometry);
+        addMaterials(mesh, color, 0x000000, texture, false);
+        mesh.rotation.x = Math.PI * -0.5
+
+        scene.add(mesh);
+  });
 }
 
 ////////////
