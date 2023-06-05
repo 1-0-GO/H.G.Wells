@@ -275,56 +275,10 @@ function createLeftWall(obj, vertices, color) {
     return mesh;
 }
 
-function createFourWalls(obj, vertices, color) {
+function createRightWall(obj, vertices, color) {
     const indices = [
-        // Front face
-        9, 8, 2,
-        2, 3, 9,
-        9, 14, 17,
-        0, 14, 9,
-        0, 15, 14,
-        15, 0, 10,
-        10, 13, 15,
-        13, 16, 15,
-        12, 18, 21,
-        11, 18, 12,
-        11, 19, 18,
-        11, 1, 19,
-        1, 8, 19,
-        19, 8, 20,
-      
-        // Right face
-        22, 5, 6,
-        22, 6, 2,
-
-        //Left face
-        23, 3, 4,
-        3, 7, 4,
-
-        //Back face
-        5, 7, 6,
-        7, 5, 4
-      ];
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
-    geometry.setIndex(indices);
-    geometry.computeVertexNormals();
-
-    const mesh = new THREE.Mesh(geometry);
-    addMaterials(mesh, color, 0x000000, null, false);
-    obj.add(mesh);
-    return mesh;
-}
-
-function createRoof(obj, vertices, color) {
-    const indices = [
-        //Front Face
-        1, 0, 5,
-        5, 4, 1,
-
-        //Right Face
-        0, 2, 5,
+         0, 1, 2,
+         2, 3, 0,
       ];
 
     const geometry = new THREE.BufferGeometry();
@@ -342,6 +296,22 @@ function createRectangle(obj, vertices, color) {
     const indices = [
         0, 1, 2,
         2, 3, 0
+      ];
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3) );
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geometry);
+    addMaterials(mesh, color, 0x000000, null, false);
+    obj.add(mesh);
+    return mesh;
+}
+
+function createTriangle(obj, vertices, color) {
+    const indices = [
+        0, 1, 2
       ];
 
     const geometry = new THREE.BufferGeometry();
@@ -405,13 +375,25 @@ function createHouse(length, height, width) {
     const frontWall = createFrontWall(house, frontWallVertices, 0xf5f5dc);
 
     const backWallVertices = selectVertices(vertices, [4, 5, 6, 7]);
-    const backWall = createRoof(house, backWallVertices, 0xf5f5dc);
+    const backWall = createBackWall(house, backWallVertices, 0xf5f5dc);
 
     const leftWallVertices = selectVertices(vertices, [0, 4, 7, 3]);
-    const leftWall = createRoof(house, leftWallVertices, 0xf5f5dc);
+    const leftWall = createLeftWall(house, leftWallVertices, 0xf5f5dc);
+    
+    const rightWallVertices = selectVertices(vertices, [1, 5, 6, 2]);
+    const rightWall = createRightWall(house, rightWallVertices, 0xf5f5dc);
+    
+    const roofFrontVertices = selectVertices(vertices, [3, 2, 9, 8]);
+    const frontRoof = createRectangle(house, roofFrontVertices, 0xff8c40);
 
-    const roofVertices = selectVertices(vertices, [2, 3, 6, 7, 8, 9]);
-    const roof = createRoof(house, roofVertices, 0xff8c40);
+    const roofBackVertices = selectVertices(vertices, [6, 7, 8, 9]);
+    const backRoof = createRectangle(house, roofBackVertices, 0xff8c40);
+
+    const roofRightVertices = selectVertices(vertices, [2, 6, 9]);
+    const rightRoof = createTriangle(house, roofRightVertices, 0xff8c40);
+
+    const roofLeftVertices = selectVertices(vertices, [3, 8, 7]);
+    const leftRoof = createTriangle(house, roofLeftVertices, 0xff8c40);
 
     const skirtVertices = selectVertices(vertices, [0, 1, 11, 10]);
     const skirt = createRectangle(house, skirtVertices, 0x0000ff);
@@ -488,16 +470,10 @@ context.width, context.height);
 
             var z = grayscale / 255.0 *  maxHeight + heightOffset;
             vertices.array[j] = z; 
-            const blendedColor = new THREE.Color().copy(color).multiplyScalar(grayscale / 255);
-            data[k] = blendedColor.r * 255;
-            data[k + 1] = blendedColor.g * 255;
-            data[k + 2] = blendedColor.b * 255;
         }
 
-        context.putImageData(imageData, 0, 0);
-        const newTexture =  new THREE.CanvasTexture(canvas);
         var mesh = new THREE.Mesh(geometry);
-        addMaterials(mesh, color, 0x000000, newTexture, false);
+        addMaterials(mesh, color, 0x000000, texture, false);
         mesh.rotation.x = Math.PI * -0.5
 
         scene.add(mesh);
@@ -513,6 +489,7 @@ function update(){
     for(const object of updatables) {
         object.userData.tick(delta);
     }
+    house.rotation.y += 0.01;
 }
 
 /////////////
