@@ -66,8 +66,8 @@ function createScene(){
     ufo = createUFO(3, 0.15, 12);
     house = createHouse(10, 2.5, 2.5);
     createSkyDome();
-    ufo.position.set(10, 16, -5);
-    directionalLight = createDirectionalLight(1, 1, 1);
+    ufo.position.set(0, 16, 0);
+    directionalLight = createDirectionalLight(8, 8, 8);
     ambientLight = createAmbientLight();
     axis.visible = true;
     scene.add(axis);  
@@ -100,13 +100,13 @@ function createCameras() {
 /////////////////////
 function createDirectionalLight(x, y, z) {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(x,y, z);
+    directionalLight.position.set(x, y, z);
     scene.add(directionalLight);
     return directionalLight;
 }
 
 function createAmbientLight() {
-    const ambientLight = new THREE.AmbientLight(0x777777, 0.2);
+    const ambientLight = new THREE.AmbientLight(0x777777, 0.3);
     scene.add(ambientLight);
     return ambientLight;
 }
@@ -130,7 +130,7 @@ function createCylinderSpotlight(obj, radius) {
     obj.add(cylinderMesh);
 
     const spotLightTarget = new THREE.Object3D();
-    spotLightTarget.position.set(0, -10, 0);
+    spotLightTarget.position.set(0, -32, 0);
 
     const spotlight = new THREE.SpotLight(orangeLight, 1.2, 0, Math.PI / 3, 0.5);;
 
@@ -474,7 +474,7 @@ context.width, context.height);
 
         var mesh = new THREE.Mesh(geometry);
         addMaterials(mesh, color, 0x000000, texture, false);
-        mesh.rotation.x = Math.PI * -0.5
+        mesh.rotation.x = Math.PI * -0.5;
 
         scene.add(mesh);
   });
