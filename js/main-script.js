@@ -41,14 +41,13 @@ function addMaterials(mesh, color, emissive, displacementParameters, shaderMater
         noLightMaterial = new THREE.MeshBasicMaterial({color: color});
     }
     mesh.userData.materials = {
-        'lambert': new THREE.MeshLambertMaterial(params),
-        'phong': new THREE.MeshPhongMaterial(params),
+        'lambert': new THREE.MeshLambertMaterial({...params, combine: THREE.MultiplyOperation}),
+        'phong': new THREE.MeshPhongMaterial({...params, combine: THREE.MultiplyOperation}),
         'toon': new THREE.MeshToonMaterial(params),
         'basic': noLightMaterial
     };
     
     mesh.material = mesh.userData.materials['phong'];
-    console.log(mesh.material.displacementScale)
     sceneObjects.push(mesh);
 }
 
@@ -71,12 +70,15 @@ function createScene(){
     'use strict';
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x040b28);
+
     moon = createMoon(4);
     moon.position.set(-30, 20, -5);
     ufo = createUFO(3, 0.15, 12);
+    ufo.position.set(0, 16, 0);
+    // createCorkOakForest();
     house = createHouse(10, 2.5, 2.5);
     createSkyDome();
-    ufo.position.set(0, 16, 0);
+
     directionalLight = createDirectionalLight(8, 8, 8);
     ambientLight = createAmbientLight();
     axis.visible = true;
@@ -221,6 +223,77 @@ function createUFO(radius, smallSphereRadius, numSmallSpheres) {
     scene.add(ufo);
     return ufo;
 }
+
+function createCorkOakTree() {
+    const tree = new THREE.Group();
+  
+    // Trunk
+    const trunkHeight = 12;
+    const trunkRadiusTop = 1;
+    const trunkRadiusBottom = 2;
+    const trunkGeometry = new THREE.CylinderGeometry(trunkRadiusTop, trunkRadiusBottom, trunkHeight, 32);
+    const trunkMaterial = new THREE.MeshBasicMaterial({ color: 0xA0522D }); 
+    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+    tree.add(trunk);
+  
+    // Crown
+    const numCrownSegments = Math.floor(Math.random() * 3) + 1; // Random number of crown segments (1, 2, or 3)
+    const crownHeight = 6;
+    const crownRadiusX = 3.5; 
+    const crownRadiusZ = 6; 
+    const crownGeometry = new THREE.SphereGeometry(crownRadiusX, 32, 32);
+    const crownMaterial = new THREE.MeshBasicMaterial({ color: 0x006400 }); 
+    
+    // Branch
+    const branchHeight = 5;
+    const branchRadiusTop = 0.6;
+    const branchRadiusBottom = 0.6;
+    const branchGeometry = new THREE.CylinderGeometry(branchRadiusTop, branchRadiusBottom, branchHeight, 32);
+    const branchMaterial = new THREE.MeshBasicMaterial({ color: 0xA0522D }); 
+    const branch = new THREE.Mesh(branchGeometry, branchMaterial);
+    branch.position.set(-1.5, (trunkHeight + crownHeight) / 4, 1.5); 
+    branch.rotation.set(Math.PI / 4, 0, Math.PI / 4); 
+    trunk.add(branch);
+
+
+
+    for (let i = 0; i < numCrownSegments; i++) {
+      const crown = new THREE.Mesh(crownGeometry, crownMaterial);
+      crown.position.set(0, trunkHeight , 0);
+      const scale = 1 - i * 0.2; // Scale down each segment
+      crown.scale.set(scale, scale, crownRadiusZ / crownRadiusX); // Set the Z scale to make the ellipsoid flatter
+      tree.add(crown);
+    }
+  
+    return tree;
+}
+  
+// Create multiple instances of cork oak trees
+function createCorkOakForest() {
+  const numTrees = 5; // Number of trees in the forest
+
+  for (let i = 0; i < numTrees; i++) {
+    const tree = new THREE.Group();
+
+    // Randomize tree properties
+    const height = Math.random() * 10 + 10;
+    const positionX = Math.random() * 40 - 20; 
+    const positionZ = Math.random() * 40 - 20; 
+    const rotationY = Math.random() * Math.PI * 2;
+
+    // Create the tree
+    const trunk = createCorkOakTree();
+    tree.add(trunk); // Add the trunk to the tree group
+
+    // Set tree properties
+    tree.scale.set(height / 20, height / 20, height / 20);  
+    tree.position.set(positionX, 0, positionZ); 
+    tree.rotation.set(0, rotationY, 0); 
+
+    scene.add(tree); 
+  }
+}
+
 
 function createFrontWall(obj, vertices, color) { 
     const indices = [
