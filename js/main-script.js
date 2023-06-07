@@ -11,6 +11,7 @@ let ambientLight;
 let moon;
 let ufo;
 let house;
+let skyDome;
 let floor;
 const axis = new THREE.AxesHelper(20);
 const updatables = [];
@@ -63,7 +64,11 @@ function changeMaterials(materialName) {
 function selectVertices(allVertices, indices) {
     const selectedVertices = indices.flatMap(index => allVertices.slice(index * 3, index * 3 + 3));
     return new Float32Array(selectedVertices);
-  }
+}
+
+function sampleFromInterval(min, max) {
+    return Math.random() * (max - min) + min;
+}
 
 
 /////////////////////
@@ -74,15 +79,15 @@ function createScene(){
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x040b28);
 
-    moon = createMoon(4);
-    moon.position.set(-30, 20, -5);
-    ufo = createUFO(3, 0.15, 12);
-    ufo.position.set(0, 16, 0);
-    // createCorkOakForest();
-    house = createHouse(10, 2.5, 2.5);
-    createSkyDome();
-
-    directionalLight = createDirectionalLight(8, 8, 8);
+    moon = createMoon(7);
+    moon.position.set(-75, 30, -25);
+    ufo = createUFO(4, 0.15, 12);
+    ufo.position.set(0, 20, 0);
+    createCorkOakForest();
+    house = createHouse(15, 3.5, 3.5);
+    skyDome = createSkyDome();
+    
+    directionalLight = createDirectionalLight(32, 8, 16);
     ambientLight = createAmbientLight();
     axis.visible = true;
     scene.add(axis);  
@@ -106,7 +111,7 @@ function createPerspectiveCamera(x,y,z) {
 
 function createCameras() {
     // frontal
-    cameras['1'] = createPerspectiveCamera(20 , 20, 20); 
+    cameras['1'] = createPerspectiveCamera(25, 20, 25); 
     activeCamera = cameras['1'];
  }
 
@@ -138,7 +143,7 @@ function createMoon(radius) {
 }
 
 function createCylinderSpotlight(obj, radius) {
-    const cylinderGeometry = new THREE.CylinderGeometry(radius/3, radius/3, radius/6, segments);
+    const cylinderGeometry = new THREE.CylinderGeometry(radius/4, radius/4, radius/8, segments);
     const cylinderMesh = new THREE.Mesh(cylinderGeometry);
     addMaterials(cylinderMesh, 0xAAAA55, 0xFF0000, null, null);
 
@@ -153,7 +158,7 @@ function createCylinderSpotlight(obj, radius) {
     obj.userData.lights.spotlight = spotlight;
     
 
-    cylinderMesh.position.y = -radius/3; 
+    cylinderMesh.position.y = -radius/4; 
     obj.add(cylinderMesh);
 }
 
@@ -165,10 +170,10 @@ function createSmallSpheres(obj, radius, smallSphereRadius, numSmallSpheres, seg
         addMaterials(smallSphereMesh, 0xAAAA55, 0xFF0000, null, null);
         const angle = (i / numSmallSpheres) * Math.PI * 2;
         const radiusOffset = radius * 0.7; // Offset from the center of the body
-        smallSphereMesh.position.set(Math.cos(angle) * radiusOffset, -radius/3, Math.sin(angle) * radiusOffset);
+        smallSphereMesh.position.set(Math.cos(angle) * radiusOffset, -radius/4 + 0.1, Math.sin(angle) * radiusOffset);
         obj.add(smallSphereMesh);
 
-        const pointLight = new THREE.PointLight(orangeLight, 1, 4);
+        const pointLight = new THREE.PointLight(orangeLight, 1, 6);
         pointLight.position.copy(smallSphereMesh.position);
         smallSphereMesh.add(pointLight);
         obj.userData.lights.pointLights.push(pointLight);
@@ -178,14 +183,14 @@ function createSmallSpheres(obj, radius, smallSphereRadius, numSmallSpheres, seg
 function createCockpit(obj, radius, segments) {
     const cockpitGeometry = new THREE.SphereGeometry(radius, segments, segments, 0, Math.PI*2, 0, Math.PI/2);
     const cockpitMesh = new THREE.Mesh(cockpitGeometry);
-    addMaterials(cockpitMesh, 0xFFFFFF, 0x000000, null, null);
+    addMaterials(cockpitMesh, 0xBCE3E8, 0x000000, null, null);
     cockpitMesh.position.y = radius;
     obj.add(cockpitMesh);
 }
 
 function createMainBody(radius, segments) {
     const bodyGeometry = new THREE.SphereGeometry(radius, segments, segments);
-    bodyGeometry.scale(1, 1/3, 1);
+    bodyGeometry.scale(1, 1/4, 1);
     const bodyMesh = new THREE.Mesh(bodyGeometry);
     addMaterials(bodyMesh, 0x3355AA, 0x000000, null, null);
     return bodyMesh;
@@ -194,7 +199,7 @@ function createMainBody(radius, segments) {
 function createUFO(radius, smallSphereRadius, numSmallSpheres) {
     segments = 64;
     const ufo = createMainBody(radius, segments);
-    createCockpit(ufo, radius/3, segments);
+    createCockpit(ufo, radius/4, segments);
     ufo.userData.lights = {
         spotlight: undefined,
         pointLights : []
@@ -227,73 +232,72 @@ function createUFO(radius, smallSphereRadius, numSmallSpheres) {
     return ufo;
 }
 
+function createCylinderGeometry(radiusTop, radiusBottom, height, radialSegments,
+                                 heightSegments, color, rotation) {
+    var geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments, heightSegments);
+    const mesh = new THREE.Mesh(geometry);
+    mesh.rotation.z = rotation;
+    addMaterials(mesh, color, 0x000000, null, null);
+    return mesh;
+}
+
+
+
 function createCorkOakTree() {
     const tree = new THREE.Group();
-  
-    // Trunk
-    const trunkHeight = 12;
-    const trunkRadiusTop = 1;
-    const trunkRadiusBottom = 2;
-    const trunkGeometry = new THREE.CylinderGeometry(trunkRadiusTop, trunkRadiusBottom, trunkHeight, 32);
-    const trunkMaterial = new THREE.MeshBasicMaterial({ color: 0xA0522D }); 
-    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-    tree.add(trunk);
-  
-    // Crown
-    const numCrownSegments = Math.floor(Math.random() * 3) + 1; // Random number of crown segments (1, 2, or 3)
-    const crownHeight = 6;
-    const crownRadiusX = 3.5; 
-    const crownRadiusZ = 6; 
-    const crownGeometry = new THREE.SphereGeometry(crownRadiusX, 32, 32);
-    const crownMaterial = new THREE.MeshBasicMaterial({ color: 0x006400 }); 
-    
-    // Branch
-    const branchHeight = 5;
-    const branchRadiusTop = 0.6;
-    const branchRadiusBottom = 0.6;
-    const branchGeometry = new THREE.CylinderGeometry(branchRadiusTop, branchRadiusBottom, branchHeight, 32);
-    const branchMaterial = new THREE.MeshBasicMaterial({ color: 0xA0522D }); 
-    const branch = new THREE.Mesh(branchGeometry, branchMaterial);
-    branch.position.set(-1.5, (trunkHeight + crownHeight) / 4, 1.5); 
-    branch.rotation.set(Math.PI / 4, 0, Math.PI / 4); 
-    trunk.add(branch);
+    const trunkColor = 0xE97451;
 
+    log = createCylinderGeometry(1, 1, 15, 42, 32, trunkColor, 0);
+    log.position.set(0, 6, 0);
 
+    branch1 = createCylinderGeometry(0.5, 0.5, 6, 32, 32, trunkColor, -Math.PI / 3);
+    branch1.position.set(2, 7.5, 0);
+    branch2 = createCylinderGeometry(0.3, 0.3, 2.5, 32, 32, trunkColor, Math.PI / 6);
+    branch2.position.set(4.5, 7.0, 0);
+    branch3 = createCylinderGeometry(0.5, 0.5, 4, 32, 32, trunkColor, Math.PI / 3);
+    branch3.position.set(-2, 5.5, 0);
 
-    for (let i = 0; i < numCrownSegments; i++) {
-      const crown = new THREE.Mesh(crownGeometry, crownMaterial);
-      crown.position.set(0, trunkHeight , 0);
-      const scale = 1 - i * 0.2; // Scale down each segment
-      crown.scale.set(scale, scale, crownRadiusZ / crownRadiusX); // Set the Z scale to make the ellipsoid flatter
-      tree.add(crown);
-    }
-  
+    const elipsoidGeometry = new THREE.SphereGeometry(3, 32, 32);
+    elipsoidGeometry.scale(1.75, 1, 2);
+    const canopy = new THREE.Mesh(elipsoidGeometry);
+    canopy.position.set(0, 14, 0);
+    addMaterials(canopy, 0x006400, 0x000000, null, null);
+
+    tree.add(log);
+    tree.add(branch1);
+    tree.add(branch2);
+    tree.add(branch3);
+    tree.add(canopy);
+
     return tree;
 }
-  
-// Create multiple instances of cork oak trees
+
 function createCorkOakForest() {
-  const numTrees = 5; // Number of trees in the forest
+  const numTrees = 12; 
+  let xmin = -80;
+  const xmax = 40;
+  const minSpacing = 9;
+  const xside = (xmax - xmin) / numTrees - minSpacing;
+  const zmin = -55;
+  const zmax = -5;
+  const zmed = (zmin + zmax) / 2;
+  const zs = [zmin, zmed - minSpacing, zmed + minSpacing, zmax];
 
-  for (let i = 0; i < numTrees; i++) {
-    const tree = new THREE.Group();
+  for (let i = 0; i < numTrees; i++, xmin += minSpacing + xside) {
+    const height = sampleFromInterval(10, 15);
+    let positionX = sampleFromInterval(xmin, xmin + xside); 
+    const base = i % 2 ? 0 : 2;
+    let positionZ = sampleFromInterval(zs[base], zs[base + 1]);
+    const rotationY = sampleFromInterval(0, 2 * Math.PI);
 
-    // Randomize tree properties
-    const height = Math.random() * 10 + 10;
-    const positionX = Math.random() * 40 - 20; 
-    const positionZ = Math.random() * 40 - 20; 
-    const rotationY = Math.random() * Math.PI * 2;
+    const tree = createCorkOakTree();
 
-    // Create the tree
-    const trunk = createCorkOakTree();
-    tree.add(trunk); // Add the trunk to the tree group
-
-    // Set tree properties
-    tree.scale.set(height / 20, height / 20, height / 20);  
+    tree.scale.set(height / 15, height / 15, height / 15);  
     tree.position.set(positionX, 0, positionZ); 
     tree.rotation.set(0, rotationY, 0); 
 
     scene.add(tree); 
+    console.log(positionX, positionZ);
   }
 }
 
@@ -454,19 +458,23 @@ function createHouse(length, height, width) {
         0.5 * length, 0, width,  // Vertex 22
         0.7 * length, 0, width,   // Vertex 23
         0.7 * length, 0.6 * height, width,  // Vertex 24
-        0.5 * length, 0.6 * height, width   // Vertex 25
+        0.5 * length, 0.6 * height, width,   // Vertex 25
+
+        // More Skirt
+        length, -0.6 * height, -width,  // Vertex 26
+        -length, -0.6 * height, -width,   // Vertex 27       
       ];
 
     const frontWallVertices = selectVertices(vertices, [10, 11, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]);
     const frontWall = createFrontWall(house, frontWallVertices, 0xF5F5DC);
 
-    const backWallVertices = selectVertices(vertices, [4, 5, 6, 7]);
+    const backWallVertices = selectVertices(vertices, [27, 26, 6, 7]);
     const backWall = createBackWall(house, backWallVertices, 0xF5F5DC);
 
-    const leftWallVertices = selectVertices(vertices, [0, 4, 7, 3]);
+    const leftWallVertices = selectVertices(vertices, [10, 27, 7, 3]);
     const leftWall = createLeftWall(house, leftWallVertices, 0xF5F5DC);
     
-    const rightWallVertices = selectVertices(vertices, [1, 5, 6, 2]);
+    const rightWallVertices = selectVertices(vertices, [11, 26, 6, 2]);
     const rightWall = createRightWall(house, rightWallVertices, 0xF5F5DC);
     
     const roofFrontVertices = selectVertices(vertices, [3, 2, 9, 8]);
@@ -481,8 +489,17 @@ function createHouse(length, height, width) {
     const roofLeftVertices = selectVertices(vertices, [3, 8, 7]);
     const leftRoof = createTriangle(house, roofLeftVertices, 0xFF8C40);
 
-    const skirtVertices = selectVertices(vertices, [0, 1, 11, 10]);
-    const skirt = createRectangle(house, skirtVertices, 0x0000FF);
+    const frontSkirtVertices = selectVertices(vertices, [0, 1, 11, 10]);
+    const frontSkirt = createRectangle(house, frontSkirtVertices, 0x0000FF);
+    
+    const backSkirtVertices = selectVertices(vertices, [4, 27, 26, 5]);
+    const backSkirt = createRectangle(house, backSkirtVertices, 0x0000FF);
+    
+    const rightSkirtVertices = selectVertices(vertices, [1, 5, 26, 11]);
+    const rightSkirt = createRectangle(house, rightSkirtVertices, 0x0000FF);
+    
+    const leftSkirtVertices = selectVertices(vertices, [0, 10, 27, 4]);
+    const leftSkirt = createRectangle(house, leftSkirtVertices, 0x0000FF);
 
     const doorVertices = selectVertices(vertices, [14, 15, 16, 17]);
     const door = createRectangle(house, doorVertices, 0x0000FF);
@@ -493,30 +510,26 @@ function createHouse(length, height, width) {
     const rightWindowVertices = selectVertices(vertices, [22, 23, 24, 25]);
     const rightWindow = createRectangle(house, rightWindowVertices, 0x0000FF);
 
-    house.position.set(5, 0.5 * height + 0.7, 5);
-    house.rotation.y = 0.2;
+    house.position.set(0, 0.5 * height + 0.7, 5);
+    house.rotation.y = 0.15;
     scene.add(house);
     return house;
 }
 
 function createSkyDome() {
-    let geometry = new THREE.SphereGeometry(50, 32, 32, 0, Math.PI*2, 0, Math.PI/2); 
-    let material = new THREE.MeshBasicMaterial({ side: THREE.BackSide }); 
-
-    let textureLoader = new THREE.TextureLoader();
-    textureLoader.load('https://web.tecnico.ulisboa.pt/~ist199068/recursos/ceu_estrelado.jpeg', function(texture) {
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(20, 1);
-        material.map = texture;
-        material.needsUpdate = true;
-    });
-
-    const sphere = new THREE.Mesh(geometry, material);
-    scene.add(sphere); 
+    let geometry = new THREE.SphereGeometry(500, 32, 32, 0, Math.PI*2, 0, Math.PI/2); 
+    const skyDome = new THREE.Mesh(geometry);
+    addMaterials(skyDome, 0xFFFFFF, 0x000000, null, null);
+    for(const key in skyDome.userData.materials) {
+        const material = skyDome.userData.materials[key];
+        material.side = THREE.BackSide;
+    }
+    skyDome.position.y = -70;
+    scene.add(skyDome); 
+    return skyDome;
 }
 
-function generateFlowerTexture(textureSize) {
+function createFlowerTexture(textureSize) {
 
     const canvas = document.createElement('canvas');
     canvas.width = textureSize;
@@ -527,37 +540,70 @@ function generateFlowerTexture(textureSize) {
 
     const flowerColors = ['#FFFFFF', '#FFFF00', '#CBB1D1', '#87CEEB'];
     const flowerSize = textureSize / 256;
-    const groundCoverage = 0.90;
+    const flowerCount = 2048;
+    const margin = flowerSize * 2;
 
-    for (let y = 0; y < textureSize; y += flowerSize) {
-        for (let x = 0; x < textureSize; x += flowerSize) {
-            let isGround = Math.random() < groundCoverage;
-            if (isGround) continue;
+    for (let i = 0; i < flowerCount; i++) {
+       const x = sampleFromInterval(margin, textureSize - margin); 
+       const y = sampleFromInterval(margin, textureSize - margin); 
 
-            const flowerColor = flowerColors[Math.floor(Math.random() * flowerColors.length)];
-            context.fillStyle = flowerColor;
-            context.beginPath();
-            context.arc(x + flowerSize, y + flowerSize, flowerSize, 0, Math.PI * 2);
-            context.closePath();
-            context.fill();
-        }
+        const flowerColor = flowerColors[Math.floor(Math.random() * flowerColors.length)];
+        context.fillStyle = flowerColor;
+        context.beginPath();
+        context.arc(x + flowerSize, y + flowerSize, flowerSize, 0, Math.PI * 2);
+        context.closePath();
+        context.fill();
     }
 
     const flowerTexture =  new THREE.CanvasTexture(canvas)
-    flowerTexture.wrapS = THREE.RepeatWrapping;
-    flowerTexture.wrapT = THREE.RepeatWrapping;
-    flowerTexture.repeat.set(1, 1);
 
     return flowerTexture;
 }
 
+function createSkyTexture(textureSize) {
+    const canvas = document.createElement('canvas');
+    canvas.width = textureSize;
+    canvas.height = textureSize;
+    const context = canvas.getContext('2d');
+
+    const gradient = context.createLinearGradient(0, 0, 0, textureSize);
+    gradient.addColorStop(0, '#040BA8'); 
+    gradient.addColorStop(1, '#0A0532'); 
+
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, textureSize, textureSize);
+
+    const starColor = "#FFFFFF";
+    const starSize = textureSize / 2048;
+    const starCount = 1024;
+    const margin = 2 * starSize;
+
+    for (let i = 0; i < starCount; i++) {
+        const x = sampleFromInterval(margin, textureSize - margin); 
+        const y = sampleFromInterval(margin, textureSize - margin); 
+
+        context.fillStyle = starColor;
+        context.beginPath();
+        context.arc(x + starSize, y + starSize, starSize, 0, Math.PI * 2);
+        context.closePath();
+        context.fill();
+    }
+
+    const skyTexture =  new THREE.CanvasTexture(canvas)
+    skyTexture.wrapS = THREE.RepeatWrapping;
+    skyTexture.wrapT = THREE.RepeatWrapping;
+    skyTexture.repeat.set(4, 4);
+
+    return skyTexture;
+}
+
 function createFloor() {
-    var width = 128; 
-    var height = 128; 
+    var width = 256; 
+    var height = 256; 
     var segmentsX = 64;
     var segmentsY = 64;
-    var maxHeight = 20;
-    var heightOffset = -6;
+    var maxHeight = 25;
+    var heightOffset = -8;
     
     var geometry = new THREE.PlaneGeometry(width, height, segmentsX, segmentsY);
     const texture = new THREE.TextureLoader().load('https://web.tecnico.ulisboa.pt/~ist199068/recursos/heightmap.png');
@@ -626,7 +672,6 @@ function update(){
     for(const object of updatables) {
         object.userData.tick(delta);
     }
-    // house.rotation.y += 0.01;
 }
 
 /////////////
@@ -647,26 +692,22 @@ function init() {
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+    document.body.appendChild( VRButton.createButton( renderer ) );
+    renderer.xr.enabled = true;
+    renderer.setAnimationLoop( function () {
+        update();
+        display();
+    } );
 
+    
     createScene();  
     createCameras();
 
     window.addEventListener("keyup", onKeyUp);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("resize", onResize);
-
 }
 
-/////////////////////
-/* ANIMATION CYCLE */
-/////////////////////
-function animate() {
-    'use strict';
-    update();
-    display();
-
-    requestAnimationFrame(animate);
-}
 
 ////////////////////////////
 /* RESIZE WINDOW CALLBACK */
@@ -715,7 +756,7 @@ function onKeyUp(e){
     let key = e.key;
     switch (key) {
         case '1':
-            const flowerTexture = generateFlowerTexture(1024);
+            const flowerTexture = createFlowerTexture(1024);
             for(const key in floor.userData.materials) {
                 const material = floor.userData.materials[key];
                 if(key === 'basic') {
@@ -723,6 +764,14 @@ function onKeyUp(e){
                 } else {
                     material.map = flowerTexture;
                 }
+                material.needsUpdate = true;
+            }
+            break;
+        case '2':
+            const skyTexture = createSkyTexture(512);
+            for(const key in skyDome.userData.materials) {
+                const material = skyDome.userData.materials[key];
+                material.map = skyTexture;
                 material.needsUpdate = true;
             }
             break;
