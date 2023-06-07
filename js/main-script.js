@@ -32,24 +32,27 @@ const arrowKeysState = {
 ////////////////////////
 
 function addMaterials(mesh, color, emissive, displacementParameters, shaderMaterial) {
-    let params = {color: color, emissive: emissive};
+    let params = { color: color, emissive: emissive };
     let noLightMaterial;
-    if(displacementParameters) {
-        params = {...params, ...displacementParameters};
+
+    if (displacementParameters) {
+        params = { ...params, ...displacementParameters };
         noLightMaterial = shaderMaterial;
     } else {
-        noLightMaterial = new THREE.MeshBasicMaterial({color: color});
+        noLightMaterial = new THREE.MeshBasicMaterial({ color: color });
     }
+
     mesh.userData.materials = {
-        'lambert': new THREE.MeshLambertMaterial({...params, combine: THREE.MultiplyOperation}),
-        'phong': new THREE.MeshPhongMaterial({...params, combine: THREE.MultiplyOperation}),
+        'lambert': new THREE.MeshLambertMaterial({ ...params, combine: THREE.MultiplyOperation }),
+        'phong': new THREE.MeshPhongMaterial({ ...params, combine: THREE.MultiplyOperation }),
         'toon': new THREE.MeshToonMaterial(params),
         'basic': noLightMaterial
     };
-    
+
     mesh.material = mesh.userData.materials['phong'];
     sceneObjects.push(mesh);
 }
+
 
 function changeMaterials(materialName) {
     for(mesh of sceneObjects) {
