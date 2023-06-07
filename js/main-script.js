@@ -417,14 +417,14 @@ function createHouse(length, height, width) {
     const rightWindowVertices = selectVertices(vertices, [22, 23, 24, 25]);
     const rightWindow = createRectangle(house, rightWindowVertices, 0x0000FF);
 
-    house.position.set(5, height, 5);
+    house.position.set(5, 0.5 * height + 0.7, 5);
     house.rotation.y = 0.2;
     scene.add(house);
     return house;
 }
 
 function createSkyDome() {
-    let geometry = new THREE.SphereGeometry(55, 32, 32, 0, Math.PI*2, 0, Math.PI/2); 
+    let geometry = new THREE.SphereGeometry(50, 32, 32, 0, Math.PI*2, 0, Math.PI/2); 
     let material = new THREE.MeshBasicMaterial({ side: THREE.BackSide }); 
 
     let textureLoader = new THREE.TextureLoader();
@@ -550,7 +550,7 @@ function update(){
     for(const object of updatables) {
         object.userData.tick(delta);
     }
-    house.rotation.y += 0.01;
+    // house.rotation.y += 0.01;
 }
 
 /////////////
