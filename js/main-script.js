@@ -13,7 +13,6 @@ let ufo;
 let house;
 let skyDome;
 let floor;
-const axis = new THREE.AxesHelper(20);
 const updatables = [];
 const sceneObjects = [];
 //light colors 
@@ -88,10 +87,8 @@ function createScene(){
     house = createHouse(15, 3.5, 3.5);
     skyDome = createSkyDome();
     
-    directionalLight = createDirectionalLight(32, 8, 16);
+    directionalLight = createDirectionalLight(9, 12, 24);
     ambientLight = createAmbientLight();
-    axis.visible = true;
-    scene.add(axis);  
 
     floor = createFloor();
 }
@@ -112,7 +109,7 @@ function createPerspectiveCamera(x,y,z) {
 
 function createCameras() {
     // frontal
-    cameras['1'] = createPerspectiveCamera(25, 20, 25); 
+    cameras['1'] = createPerspectiveCamera(15, 10, 35); 
     activeCamera = cameras['1'];
  }
 
@@ -120,14 +117,14 @@ function createCameras() {
 /* CREATE LIGHT(S) */
 /////////////////////
 function createDirectionalLight(x, y, z) {
-    const directionalLight = new THREE.DirectionalLight(yellowLight, 1);
+    const directionalLight = new THREE.DirectionalLight(yellowLight, 3);
     directionalLight.position.set(x, y, z);
     scene.add(directionalLight);
     return directionalLight;
 }
 
 function createAmbientLight() {
-    const ambientLight = new THREE.AmbientLight(yellowLight, 1.2);
+    const ambientLight = new THREE.AmbientLight(yellowLight, 0.2);
     scene.add(ambientLight);
     return ambientLight;
 }
@@ -149,7 +146,7 @@ function createCylinderSpotlight(obj, radius) {
     addMaterials(cylinderMesh, 0xC0C0C0, 0x000000, null, null);
 
     const spotLightTarget = new THREE.Object3D();
-    spotLightTarget.position.set(0, -12, 0);
+    spotLightTarget.position.set(0, -20, 0);
 
     const spotlight = new THREE.SpotLight(blueLight, 1, 0, Math.PI / 4, 0);;
     cylinderMesh.add(spotlight);
@@ -174,7 +171,7 @@ function createSmallSpheres(obj, radius, smallSphereRadius, numSmallSpheres, seg
         smallSphereMesh.position.set(Math.cos(angle) * radiusOffset, -radius/4 + 0.1, Math.sin(angle) * radiusOffset);
         obj.add(smallSphereMesh);
 
-        const pointLight = new THREE.PointLight(blueLight, 1, 6, 3);
+        const pointLight = new THREE.PointLight(blueLight, 1, 7, 4);
         pointLight.position.copy(smallSphereMesh.position);
         smallSphereMesh.add(pointLight);
         obj.userData.lights.pointLights.push(pointLight);
@@ -274,10 +271,10 @@ function createCorkOakTree() {
 }
 
 function createCorkOakForest() {
-  const numTrees = 12; 
-  let xmin = -80;
-  const xmax = 40;
-  const minSpacing = 9;
+  const numTrees = 16; 
+  let xmin = -90;
+  const xmax = 50;
+  const minSpacing = 8;
   const xside = (xmax - xmin) / numTrees - minSpacing;
   const zmin = -55;
   const zmax = -5;
@@ -294,11 +291,10 @@ function createCorkOakForest() {
     const tree = createCorkOakTree();
 
     tree.scale.set(height / 15, height / 15, height / 15);  
-    tree.position.set(positionX, 0, positionZ); 
+    tree.position.set(positionX, -1, positionZ); 
     tree.rotation.set(0, rotationY, 0); 
 
     scene.add(tree); 
-    console.log(positionX, positionZ);
   }
 }
 
@@ -511,21 +507,21 @@ function createHouse(length, height, width) {
     const rightWindowVertices = selectVertices(vertices, [22, 23, 24, 25]);
     const rightWindow = createRectangle(house, rightWindowVertices, 0x0000FF);
 
-    house.position.set(0, 0.5 * height + 0.7, 5);
-    house.rotation.y = 0.15;
+    house.position.set(0, 0.5 * height + 0.7, 10);
+    house.rotation.y = -0.2;
     scene.add(house);
     return house;
 }
 
 function createSkyDome() {
-    let geometry = new THREE.SphereGeometry(300, 32, 32, 0, Math.PI*2, 0, Math.PI/2); 
+    let geometry = new THREE.SphereGeometry(128, 32, 32, 0, Math.PI*2, 0, Math.PI/2); 
     const skyDome = new THREE.Mesh(geometry);
     addMaterials(skyDome, 0xFFFFFF, 0x000000, null, null);
     for(const key in skyDome.userData.materials) {
         const material = skyDome.userData.materials[key];
         material.side = THREE.BackSide;
     }
-    skyDome.position.y = -70;
+    skyDome.position.y = -10;
     scene.add(skyDome); 
     return skyDome;
 }
