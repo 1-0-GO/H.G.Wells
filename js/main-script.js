@@ -694,20 +694,25 @@ function init() {
     document.body.appendChild(renderer.domElement);
     document.body.appendChild( VRButton.createButton( renderer ) );
     renderer.xr.enabled = true;
-    renderer.setAnimationLoop( function () {
-        update();
-        display();
-    } );
 
-    
     createScene();  
     createCameras();
 
     window.addEventListener("keyup", onKeyUp);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("resize", onResize);
+
 }
 
+/////////////////////
+/* ANIMATION CYCLE */
+/////////////////////
+function animate() {
+    renderer.setAnimationLoop( function () {
+        update();
+        display();
+    } );
+}
 
 ////////////////////////////
 /* RESIZE WINDOW CALLBACK */
