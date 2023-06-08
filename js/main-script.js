@@ -174,7 +174,7 @@ function createSmallSpheres(obj, radius, smallSphereRadius, numSmallSpheres, seg
         smallSphereMesh.position.set(Math.cos(angle) * radiusOffset, -radius/4 + 0.1, Math.sin(angle) * radiusOffset);
         obj.add(smallSphereMesh);
 
-        const pointLight = new THREE.PointLight(blueLight, 1, 7, 4);
+        const pointLight = new THREE.PointLight(blueLight, 1, 6, 3);
         pointLight.position.copy(smallSphereMesh.position);
         smallSphereMesh.add(pointLight);
         obj.userData.lights.pointLights.push(pointLight);
@@ -578,7 +578,7 @@ function createSkyTexture(textureSize) {
     context.fillRect(0, 0, textureSize, textureSize);
 
     const starColor = "#FFFFFF";
-    const starSize = textureSize / 4096;
+    const starSize = textureSize / 2048;
     const starCount = 1024;
     const margin = 2 * starSize;
 
@@ -772,7 +772,7 @@ function onKeyUp(e){
             }
             break;
         case '2':
-            const skyTexture = createSkyTexture(512);
+            const skyTexture = createSkyTexture(1024);
             for(const key in skyDome.userData.materials) {
                 const material = skyDome.userData.materials[key];
                 material.map = skyTexture;
