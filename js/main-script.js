@@ -108,7 +108,6 @@ function createPerspectiveCamera(x,y,z) {
 }
 
 function createCameras() {
-    // frontal
     cameras['1'] = createPerspectiveCamera(15, 10, 35); 
     activeCamera = cameras['1'];
  }
@@ -135,20 +134,20 @@ function createAmbientLight() {
 function createMoon(radius) {
     const moonGeometry = new THREE.SphereGeometry(radius, 32, 32);
     const moon = new THREE.Mesh(moonGeometry);
-    addMaterials(moon, 0xFFFFBB, 0xFFFF44, null, null);
+    addMaterials(moon, 0xFFF58C, 0xFFFF00, null, null);
     scene.add(moon);
     return moon;
 }
 
 function createCylinderSpotlight(obj, radius) {
-    const cylinderGeometry = new THREE.CylinderGeometry(radius/4, radius/4, radius/8, segments);
+    const cylinderGeometry = new THREE.CylinderGeometry(radius/4, radius/4, radius/16, segments);
     const cylinderMesh = new THREE.Mesh(cylinderGeometry);
     addMaterials(cylinderMesh, 0xC0C0C0, 0x000000, null, null);
 
     const spotLightTarget = new THREE.Object3D();
     spotLightTarget.position.set(0, -20, 0);
 
-    const spotlight = new THREE.SpotLight(blueLight, 1, 0, Math.PI / 4, 0);;
+    const spotlight = new THREE.SpotLight(blueLight, 2, 0, Math.PI / 4, 0.1);;
     cylinderMesh.add(spotlight);
 
     spotlight.target = spotLightTarget;
@@ -167,11 +166,11 @@ function createSmallSpheres(obj, radius, smallSphereRadius, numSmallSpheres, seg
         const smallSphereMesh = new THREE.Mesh(smallSphereGeometry);
         addMaterials(smallSphereMesh, 0xC0C0C0, 0x404080, null, null);
         const angle = (i / numSmallSpheres) * Math.PI * 2;
-        const radiusOffset = radius * 0.7; // Offset from the center of the body
+        const radiusOffset = radius * 0.7; 
         smallSphereMesh.position.set(Math.cos(angle) * radiusOffset, -radius/4 + 0.1, Math.sin(angle) * radiusOffset);
         obj.add(smallSphereMesh);
 
-        const pointLight = new THREE.PointLight(blueLight, 1, 7, 4);
+        const pointLight = new THREE.PointLight(blueLight, 1, 7, 2);
         pointLight.position.copy(smallSphereMesh.position);
         smallSphereMesh.add(pointLight);
         obj.userData.lights.pointLights.push(pointLight);
@@ -186,22 +185,23 @@ function createCockpit(obj, radius, segments) {
     obj.add(cockpitMesh);
 }
 
-function createMainBody(radius, segments) {
+function createMainBody(obj, radius, segments) {
     const bodyGeometry = new THREE.SphereGeometry(radius, segments, segments);
     bodyGeometry.scale(1, 1/4, 1);
     const bodyMesh = new THREE.Mesh(bodyGeometry);
     addMaterials(bodyMesh, 0xC0C0C0, 0x000000, null, null);
-    return bodyMesh;
+    obj.add(bodyMesh);
 }
 
 function createUFO(radius, smallSphereRadius, numSmallSpheres) {
     segments = 64;
-    const ufo = createMainBody(radius, segments);
+    const ufo = new THREE.Group();
+    createMainBody(ufo, radius, segments);
     createCockpit(ufo, radius/4, segments);
     ufo.userData.lights = {
         spotlight: undefined,
         pointLights : []
-    }
+    };
     ufo.userData.speed = 10;
     ufo.userData.rotationSpeed = 3.5;
     createSmallSpheres(ufo, radius, smallSphereRadius, numSmallSpheres, segments);
@@ -232,7 +232,7 @@ function createUFO(radius, smallSphereRadius, numSmallSpheres) {
 
 function createCylinderGeometry(radiusTop, radiusBottom, height, radialSegments,
                                  heightSegments, color, rotation) {
-    var geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments, heightSegments);
+    let geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments, heightSegments);
     const mesh = new THREE.Mesh(geometry);
     mesh.rotation.z = rotation;
     addMaterials(mesh, color, 0x000000, null, null);
@@ -282,7 +282,7 @@ function createCorkOakForest() {
   const zs = [zmin, zmed - minSpacing, zmed + minSpacing, zmax];
 
   for (let i = 0; i < numTrees; i++, xmin += minSpacing + xside) {
-    const height = sampleFromInterval(10, 15);
+    const height = sampleFromInterval(9, 16);
     let positionX = sampleFromInterval(xmin, xmin + xside); 
     const base = i % 2 ? 0 : 2;
     let positionZ = sampleFromInterval(zs[base], zs[base + 1]);
@@ -574,8 +574,8 @@ function createSkyTexture(textureSize) {
     context.fillRect(0, 0, textureSize, textureSize);
 
     const starColor = "#FFFFFF";
-    const starSize = textureSize / 2048;
-    const starCount = 1024;
+    const starSize = textureSize / 1024;
+    const starCount = 512;
     const margin = 2 * starSize;
 
     for (let i = 0; i < starCount; i++) {
@@ -598,14 +598,14 @@ function createSkyTexture(textureSize) {
 }
 
 function createFloor() {
-    var width = 256; 
-    var height = 256; 
-    var segmentsX = 64;
-    var segmentsY = 64;
-    var maxHeight = 25;
-    var heightOffset = -8;
+    let width = 256; 
+    let height = 256; 
+    let segmentsX = 64;
+    let segmentsY = 64;
+    let maxHeight = 25;
+    let heightOffset = -8;
     
-    var geometry = new THREE.PlaneGeometry(width, height, segmentsX, segmentsY);
+    let geometry = new THREE.PlaneGeometry(width, height, segmentsX, segmentsY);
     const texture = new THREE.TextureLoader().load('https://web.tecnico.ulisboa.pt/~ist199068/recursos/heightmap.png');
 
     let shaderMaterial = new THREE.ShaderMaterial({
@@ -658,7 +658,6 @@ function createFloor() {
     addMaterials(floor, 0xFFFFFF, 0x000000, displacementParameters, shaderMaterial);
     floor.rotation.x = -Math.PI / 2;
     scene.add(floor);
-    sceneObjects.push(floor);
 
     return floor;
 }
